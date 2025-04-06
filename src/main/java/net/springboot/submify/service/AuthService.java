@@ -1,0 +1,72 @@
+package net.springboot.submify.service;
+
+import net.springboot.submify.entity.Role;
+import net.springboot.submify.entity.Teacher;
+import net.springboot.submify.enums.RoleType;
+import net.springboot.submify.repository.RoleRepository;
+import net.springboot.submify.repository.TeacherRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+public class AuthService {
+
+    private final TeacherRepository teacherRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+
+    public AuthService(TeacherRepository teacherRepository, RoleRepository roleRepository,
+                       PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager) {
+        this.teacherRepository = teacherRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+    }
+
+    public Optional<Teacher> signup(Teacher teacher){
+        if (teacherRepository.findByEmail(teacher.getEmail()) != null) {
+            throw new RuntimeException("Email already exists!");
+        }
+
+        // Encode the password before saving
+        teacher.setPassword(passwordEncoder.encode(teacher.getPassword()));
+
+        // Save the teacher first
+        Teacher savedTeacher = teacherRepository.save(teacher);
+
+        // Set the default role
+        Role defaultRole = new Role();
+        defaultRole.setRoleType(RoleType.TEACHER);
+        defaultRole.setTeacher(savedTeacher);
+        roleRepository.save(defaultRole);
+
+        Set<Role> roles = new HashSet<>();
+        roles.add(defaultRole);
+        savedTeacher.setRoles(roles);
+        return Optional.of(teacherRepository.save(savedTeacher));
+    }
+
+    public ResponseEntity<String> login(Teacher teacher) {
+        Authentication authenticate = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        teacher.getEmail(), teacher.getPassword()
+                )
+        );
+
+        if(authenticate.isAuthenticated()){
+            return new ResponseEntity<>("Login Successful", HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Login unSuccessful", HttpStatus.BAD_REQUEST);
+    }
+}

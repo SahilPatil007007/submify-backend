@@ -1,5 +1,6 @@
 package net.springboot.submify.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import net.springboot.submify.enums.RoleType;
@@ -18,7 +19,8 @@ public class Role {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "teacher_id", referencedColumnName = "id")
+    @JoinColumn(name = "teacher_id", referencedColumnName = "id", nullable = false)
+    @JsonBackReference
     private Teacher teacher;  // Many roles can belong to one teacher
 
     @Enumerated(EnumType.STRING)

@@ -13,7 +13,7 @@ public class TeacherFormController {
 
     public final TeacherFormService teacherFormService;
 
-    @PostMapping("/form/{teacherId}")
+    @PostMapping("/api/teacher/form/{teacherId}")
     public ResponseEntity<String> handleSubmission(@RequestBody TeacherFormDto teacherFormDto,@PathVariable String teacherId){
         boolean submit = teacherFormService.createEntry(teacherFormDto, teacherId);
 

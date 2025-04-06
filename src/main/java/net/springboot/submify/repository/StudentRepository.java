@@ -29,6 +29,4 @@ public interface StudentRepository extends JpaRepository<Student, String> {
             @Param("divisionId") String divisionId
     );
 
-
-
 }

@@ -9,7 +9,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class SubjectDivisionService {
+public class HomePageService {
 
     private final SubjectDivisionRepository subjectDivisionRepository;
 

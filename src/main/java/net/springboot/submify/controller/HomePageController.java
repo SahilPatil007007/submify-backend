@@ -16,10 +16,11 @@ public class HomePageController {
 
     private final HomePageService subjectDivisionService;
 
-    @GetMapping("/api/teacher/{teacherId}")
-    public ResponseEntity<List<SubjectDivision>> getSubjectDivision(@PathVariable String teacherId) {
-
-        List<SubjectDivision> subjectDivisions = subjectDivisionService.getSubjectDivisionsByTeacher(teacherId);
+    @GetMapping("/api/teacher")
+    public ResponseEntity<List<SubjectDivision>> getSubjectDivision() {
+        Authentication authentication =SecurityContextHolder.getContext().getAuthentication();
+        String teacher =authentication.getName();
+        List<SubjectDivision> subjectDivisions = subjectDivisionService.getSubjectDivisionsByTeacher(teacher);
         return ResponseEntity.ok(subjectDivisions);
     }
 

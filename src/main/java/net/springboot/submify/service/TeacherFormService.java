@@ -24,7 +24,8 @@ public class TeacherFormService {
     public final SubjectRepository subjectRepository;
     public final TeacherRepository teacherRepository;
 
-    public boolean createEntry(TeacherFormDto teacherFormDto, String teacherId){
+    public boolean createEntry(TeacherFormDto teacherFormDto, String teacher){
+        String teacherId = teacherRepository.findByEmail(teacher).getId();
         String divId = teacherFormDto.getDiv();
         String sub = teacherFormDto.getSub();
 

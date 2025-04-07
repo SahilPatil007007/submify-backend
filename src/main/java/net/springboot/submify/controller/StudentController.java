@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import net.springboot.submify.dto.StudentSubmissionDTO;
 import net.springboot.submify.service.StudentService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,10 +22,12 @@ public class StudentController {
 
     @GetMapping("/submissions")
     public ResponseEntity<List<StudentSubmissionDTO>> getStudentSubmissions(
-            @RequestParam String teacherId,
             @RequestParam int subjectId,
             @RequestParam String divisionId) {
-        List<StudentSubmissionDTO> students = studentService.getStudentDetails(teacherId, subjectId, divisionId);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String teacher =authentication.getName();
+        List<StudentSubmissionDTO> students = studentService.getStudentDetails(teacher, subjectId, divisionId);
         return ResponseEntity.ok(students);
     }
 }

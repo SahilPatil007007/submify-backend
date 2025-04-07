@@ -5,11 +5,14 @@ import net.springboot.submify.entity.Teacher;
 import net.springboot.submify.enums.RoleType;
 import net.springboot.submify.repository.RoleRepository;
 import net.springboot.submify.repository.TeacherRepository;
+import net.springboot.submify.utils.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,13 +28,15 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
 
     public AuthService(TeacherRepository teacherRepository, RoleRepository roleRepository,
-                       PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager) {
+                       PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
         this.teacherRepository = teacherRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
     }
 
     public Optional<Teacher> signup(Teacher teacher){
@@ -58,15 +63,20 @@ public class AuthService {
     }
 
     public ResponseEntity<String> login(Teacher teacher) {
-        Authentication authenticate = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        teacher.getEmail(), teacher.getPassword()
-                )
-        );
+        try {
+            Authentication authenticate = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            teacher.getEmail(), teacher.getPassword()
+                    )
+            );
+            UserDetails userDetails;
+            userDetails = (UserDetails) authenticate.getPrincipal();
+            String token;
+            token = jwtUtil.generateToken(userDetails.getUsername());
 
-        if(authenticate.isAuthenticated()){
-            return new ResponseEntity<>("Login Successful", HttpStatus.OK);
+            return new ResponseEntity<>(token, HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>("Login unSuccessful", HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>("Login unSuccessful", HttpStatus.BAD_REQUEST);
     }
 }

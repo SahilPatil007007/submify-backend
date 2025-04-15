@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface StudentRepository extends JpaRepository<Student, String> {
@@ -29,4 +30,25 @@ public interface StudentRepository extends JpaRepository<Student, String> {
             @Param("divisionId") String divisionId
     );
 
+
+    @Query(value = """
+    SELECT 
+        s.roll_no AS rollNo,
+        subj.name AS subjectName,
+        COALESCE(sub.status, false) AS submissionStatus,
+        sub.remark AS remark,
+        s.finalize_by_coordinator AS finalized
+    FROM students s
+    JOIN divisions d ON s.division_id = d.division
+    JOIN subject_divisions sd ON sd.division_id = d.division
+    JOIN subjects subj ON sd.subject_id = subj.subject_code
+    LEFT JOIN submissions sub 
+        ON sub.student_id = s.student_id AND sub.subject_id = subj.subject_code
+    WHERE d.coordinator_id = :coordinatorId
+    ORDER BY s.roll_no, subj.subject_code
+""", nativeQuery = true)
+    List<Object[]> getSubmissionStatusForCoordinator(@Param("coordinatorId") String coordinatorId);
+
+
+    Optional<Student> findByRollNo(String rollNo);
 }

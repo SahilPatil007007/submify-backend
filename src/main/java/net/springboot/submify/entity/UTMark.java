@@ -24,6 +24,6 @@ public class UTMark {
     @JoinColumn(name = "subject_id", referencedColumnName = "subjectCode", nullable = false)
     private Subject subject;
 
-    private int ut1 = 0;
     private int ut2 = 0;
+    private int ut1 = 0;
 }

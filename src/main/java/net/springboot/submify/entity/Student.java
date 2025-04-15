@@ -29,5 +29,5 @@ public class Student {
     @JoinColumn(name = "batch_id", referencedColumnName = "batchName", nullable = false)
     private Batch batchName;
 
-    private boolean finalizeByCoordinator;
+    private boolean finalizeByCoordinator = false;
 }

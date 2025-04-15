@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface SubjectRepository extends JpaRepository<Subject, Integer> {
 
     Optional<Subject> findBySubjectName(String subjectName);
+    List<Subject> findAllBySemester(int semester);
 }

@@ -9,6 +9,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 public class TeacherFormController {
@@ -26,5 +28,11 @@ public class TeacherFormController {
         }
 
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @PostMapping("/api/teacher/form/subs")
+    public ResponseEntity<?> getSubs(@RequestBody Map<String, Integer> data){
+        int sem = data.get("sem");
+        return teacherFormService.getSubs(sem);
     }
 }

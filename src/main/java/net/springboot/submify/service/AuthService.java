@@ -1,5 +1,6 @@
 package net.springboot.submify.service;
 
+import net.springboot.submify.dto.LoginResponse;
 import net.springboot.submify.entity.Role;
 import net.springboot.submify.entity.Teacher;
 import net.springboot.submify.enums.RoleType;
@@ -62,7 +63,7 @@ public class AuthService {
         return Optional.of(teacherRepository.save(savedTeacher));
     }
 
-    public ResponseEntity<String> login(Teacher teacher) {
+    public ResponseEntity<?> login(Teacher teacher) {
         try {
             Authentication authenticate = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -74,7 +75,14 @@ public class AuthService {
             String token;
             token = jwtUtil.generateToken(userDetails.getUsername());
 
-            return new ResponseEntity<>(token, HttpStatus.OK);
+            // Fetch the actual teacher entity
+            Teacher loggedInTeacher = teacherRepository.findByEmail(userDetails.getUsername());
+
+            // Avoid sending password in response (optional but recommended)
+            loggedInTeacher.setPassword(null);
+
+            LoginResponse loginResponse = new LoginResponse(loggedInTeacher, token);
+            return new ResponseEntity<>(loginResponse, HttpStatus.OK);
         }catch (Exception e){
             return new ResponseEntity<>("Login unSuccessful", HttpStatus.BAD_REQUEST);
         }

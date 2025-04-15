@@ -26,7 +26,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody Teacher teacher) {
+    public ResponseEntity<?> login(@RequestBody Teacher teacher) {
         return authService.login(teacher);
     }
 }

@@ -20,7 +20,7 @@ public class AuthController {
     @PostMapping("/signup")
     public Optional<Teacher> signup(@RequestBody Teacher teacher) {
         if(teacher == null){
-            return null;
+            return Optional.empty();
         }
         return authService.signup(teacher);
     }

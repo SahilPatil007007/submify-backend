@@ -32,6 +32,10 @@ public class TeacherDetailsService implements UserDetailsService {
                 .map(role -> new SimpleGrantedAuthority(role.getRoleType().name()))
                 .collect(Collectors.toSet());
 
+        // Print to console
+        System.out.println("Loaded roles for " + email + ":");
+        authorities.forEach(authority -> System.out.println(authority.getAuthority()));
+
         return new org.springframework.security.core.userdetails.User(
                 teacher.getEmail(),
                 teacher.getPassword(),

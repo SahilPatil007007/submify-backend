@@ -2,6 +2,7 @@ package net.springboot.submify.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import net.springboot.submify.dto.AllowedEmailRepository;
 import net.springboot.submify.dto.StudentDTO;
 import net.springboot.submify.dto.TeacherDTO;
 import net.springboot.submify.entity.*;
@@ -9,6 +10,7 @@ import net.springboot.submify.enums.RoleType;
 import net.springboot.submify.repository.*;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -125,4 +126,34 @@ public class AdminService {
         teacher.setRoles(roles);
         teacherRepository.save(teacher);
     }
+
+    @Autowired
+    private AllowedEmailRepository allowedEmailRepository;
+
+    public int uploadAllowedEmailsFromCSV(MultipartFile file) throws IOException {
+        int count = 0;
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            Iterable<CSVRecord> records = CSVFormat.DEFAULT
+                    .withFirstRecordAsHeader()
+                    .parse(reader);
+
+            for (CSVRecord record : records) {
+                String email = record.get("email").trim().toLowerCase();
+
+                if (!email.isEmpty() && !allowedEmailRepository.existsByEmail(email)) {
+                    AllowedEmail entry = AllowedEmail.builder()
+                            .email(email)
+                            .addedBy("admin") // or current admin username if available
+                            .build();
+
+                    allowedEmailRepository.save(entry);
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
 }

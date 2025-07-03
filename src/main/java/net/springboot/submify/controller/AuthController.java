@@ -18,9 +18,9 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public Optional<Teacher> signup(@RequestBody Teacher teacher) {
-        if(teacher == null){
-            return Optional.empty();
+    public ResponseEntity<?> signup(@RequestBody Teacher teacher) {
+        if (teacher == null) {
+            return ResponseEntity.badRequest().body("Teacher payload is missing.");
         }
         return authService.signup(teacher);
     }

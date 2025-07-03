@@ -1,5 +1,6 @@
 package net.springboot.submify.service;
 
+import net.springboot.submify.dto.AllowedEmailRepository;
 import net.springboot.submify.dto.LoginResponse;
 import net.springboot.submify.entity.Role;
 import net.springboot.submify.entity.Teacher;
@@ -30,37 +31,41 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final AllowedEmailRepository allowedEmailRepository;
 
     public AuthService(TeacherRepository teacherRepository, RoleRepository roleRepository,
-                       PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+                       PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil, AllowedEmailRepository allowedEmailRepository) {
         this.teacherRepository = teacherRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.allowedEmailRepository = allowedEmailRepository;
     }
 
-    public Optional<Teacher> signup(Teacher teacher){
+    public ResponseEntity<?> signup(Teacher teacher) {
         if (teacherRepository.findByEmail(teacher.getEmail()) != null) {
-            throw new RuntimeException("Email already exists!");
+            return ResponseEntity.badRequest().body("Email already exists!");
         }
 
-        // Encode the password before saving
+        if (!allowedEmailRepository.existsByEmail(teacher.getEmail())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("This email is not pre-approved for registration.");
+        }
+
         teacher.setPassword(passwordEncoder.encode(teacher.getPassword()));
 
-        // Save the teacher first
         Teacher savedTeacher = teacherRepository.save(teacher);
 
-        // Set the default role
         Role defaultRole = new Role();
         defaultRole.setRoleType(RoleType.TEACHER);
         defaultRole.setTeacher(savedTeacher);
         roleRepository.save(defaultRole);
 
-        Set<Role> roles = new HashSet<>();
-        roles.add(defaultRole);
-        savedTeacher.setRoles(roles);
-        return Optional.of(teacherRepository.save(savedTeacher));
+        savedTeacher.setRoles(Set.of(defaultRole));
+        teacherRepository.save(savedTeacher);
+
+        return ResponseEntity.ok(savedTeacher); // or return a DTO instead
     }
 
     public ResponseEntity<?> login(Teacher teacher) {

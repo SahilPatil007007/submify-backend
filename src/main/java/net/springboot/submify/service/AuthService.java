@@ -1,6 +1,7 @@
 package net.springboot.submify.service;
 
-import net.springboot.submify.dto.AllowedEmailRepository;
+import jakarta.transaction.Transactional;
+import net.springboot.submify.repository.AllowedEmailRepository;
 import net.springboot.submify.dto.LoginResponse;
 import net.springboot.submify.entity.Role;
 import net.springboot.submify.entity.Teacher;
@@ -8,7 +9,6 @@ import net.springboot.submify.enums.RoleType;
 import net.springboot.submify.repository.RoleRepository;
 import net.springboot.submify.repository.TeacherRepository;
 import net.springboot.submify.utils.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,9 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -43,6 +41,7 @@ public class AuthService {
         this.allowedEmailRepository = allowedEmailRepository;
     }
 
+    @Transactional
     public ResponseEntity<?> signup(Teacher teacher) {
         if (teacherRepository.findByEmail(teacher.getEmail()) != null) {
             return ResponseEntity.badRequest().body("Email already exists!");
@@ -59,11 +58,11 @@ public class AuthService {
 
         Role defaultRole = new Role();
         defaultRole.setRoleType(RoleType.TEACHER);
-        defaultRole.setTeacher(savedTeacher);
-        roleRepository.save(defaultRole);
+        defaultRole.setTeacher(savedTeacher); // set owning side
 
-        savedTeacher.setRoles(Set.of(defaultRole));
-        teacherRepository.save(savedTeacher);
+        savedTeacher.getRoles().add(defaultRole); // modify a collection in-place
+
+        teacherRepository.save(savedTeacher);  // cascade saves Role
 
         return ResponseEntity.ok(savedTeacher); // or return a DTO instead
     }

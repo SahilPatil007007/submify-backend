@@ -15,13 +15,7 @@ public class Division {
     @Id
     private String division;
 
-    @Column(nullable = false)
-    private String year;
-
-    @Column(nullable = false)
-    private int semester;
-
     @OneToOne
-    @JoinColumn(name = "coordinator_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "coordinator_id", referencedColumnName = "id")
     private Teacher coordinator;
 }

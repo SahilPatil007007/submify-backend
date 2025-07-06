@@ -1,7 +1,8 @@
 package net.springboot.submify.controller;
 
 import lombok.RequiredArgsConstructor;
-import net.springboot.submify.dto.AllowedEmailRepository;
+import net.springboot.submify.dto.CoordinatorAssignmentRequest;
+import net.springboot.submify.repository.AllowedEmailRepository;
 import net.springboot.submify.dto.StudentDTO;
 import net.springboot.submify.dto.TeacherDTO;
 import net.springboot.submify.entity.AllowedEmail;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,7 +25,7 @@ public class AdminController {
     private final AdminService adminService;
     private final AllowedEmailRepository allowedEmailRepository;
 
-    @GetMapping("/fill-student")
+    @PostMapping("/fill-student")
     public ResponseEntity<?> uploadCSV(@RequestParam("file") MultipartFile file){
         try{
             adminService.saveStudentsFromCSV(file);
@@ -87,6 +89,7 @@ public class AdminController {
 
         AllowedEmail entry = AllowedEmail.builder()
                 .email(email.toLowerCase())
+                .createdAt(LocalDateTime.now())
                 .addedBy("admin@yourapp.com")
                 .build();
 
@@ -102,6 +105,55 @@ public class AdminController {
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to process CSV: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/upload-divisions")
+    public ResponseEntity<?> uploadDivisions(@RequestParam("file") MultipartFile file) {
+        try {
+            int count = adminService.uploadDivisionsFromCSV(file);
+            return ResponseEntity.ok(count + " divisions uploaded successfully.");
+        }catch (IOException e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to process CSV: "+ e.getMessage());
+        }
+    }
+
+    @PostMapping("/assign-coordinator")
+    public ResponseEntity<?> assignCoordinator(@RequestBody CoordinatorAssignmentRequest request) {
+        try {
+            adminService.assignCoordinator(request.getDivision(), request.getTeacherId());
+            return ResponseEntity.ok("Coordinator assigned successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/upload-batches")
+    public ResponseEntity<?> uploadBatches(@RequestParam("file") MultipartFile file) {
+        try {
+            int count = adminService.uploadBatchesFromCSV(file);
+            return ResponseEntity.ok(count + " batches uploaded successfully.");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to process CSV: " + e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/upload-subjects")
+    public ResponseEntity<?> uploadSubjects(@RequestParam("file") MultipartFile file) {
+        try {
+            int count = adminService.uploadSubjectsFromCSV(file);
+            return ResponseEntity.ok(count + " subjects uploaded successfully.");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to process CSV: " + e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

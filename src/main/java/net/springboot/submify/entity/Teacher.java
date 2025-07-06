@@ -27,7 +27,7 @@ public class Teacher {
     @Column(nullable = false)
     private String password;
 
-    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JsonManagedReference
     private Set<Role> roles = new HashSet<>();
 }

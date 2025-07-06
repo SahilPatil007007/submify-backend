@@ -18,17 +18,19 @@ public class TeacherFormController {
     public final TeacherFormService teacherFormService;
 
     @PostMapping("/api/teacher/form")
-    public ResponseEntity<String> handleSubmission(@RequestBody TeacherFormDto teacherFormDto){
+    public ResponseEntity<String> handleSubmission(@RequestBody TeacherFormDto teacherFormDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String teacher =authentication.getName();
+        String teacher = authentication.getName();
         boolean submit = teacherFormService.createEntry(teacherFormDto, teacher);
 
-        if(submit){
-            return new ResponseEntity<>("Changes saved",HttpStatus.OK);
+        if (submit) {
+            return new ResponseEntity<>("Course assigned successfully", HttpStatus.OK);
+        } else {
+            // Return 409 Conflict for duplicate assignment
+            return new ResponseEntity<>("This subject is already assigned to the selected division.", HttpStatus.CONFLICT);
         }
-
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
+
 
     @PostMapping("/api/teacher/form/subs")
     public ResponseEntity<?> getSubs(@RequestBody Map<String, Integer> data){

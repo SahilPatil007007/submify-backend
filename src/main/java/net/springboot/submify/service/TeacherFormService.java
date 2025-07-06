@@ -29,20 +29,31 @@ public class TeacherFormService {
     private final SubjectRepository subjectRepository;
     private final TeacherRepository teacherRepository;
 
-    public boolean createEntry(TeacherFormDto teacherFormDto, String teacher){
+    public boolean createEntry(TeacherFormDto teacherFormDto, String teacher) {
         String teacherId = teacherRepository.findByEmail(teacher).getId();
         String divId = teacherFormDto.getDiv();
         String sub = teacherFormDto.getSub();
 
-        if(divId != null && sub != null){
+        if (divId != null && sub != null) {
             Optional<Division> divisionOpt = divisionRepository.findById(divId);
             Optional<Subject> subjectOpt = subjectRepository.findBySubjectName(sub);
             Optional<Teacher> teacherOpt = teacherRepository.findById(teacherId);
 
-            if (divisionOpt.isPresent() && subjectOpt.isPresent() && teacherOpt.isPresent()){
+            if (divisionOpt.isPresent() && subjectOpt.isPresent() && teacherOpt.isPresent()) {
+                Division division = divisionOpt.get();
+                Subject subject = subjectOpt.get();
+
+                // 🔒 Check if the subject-division is already assigned
+                boolean alreadyAssigned = subjectDivisionRepository.existsByDivisionAndSubject(division, subject);
+                if (alreadyAssigned) {
+                    // ✅ Prevent duplicate assignment
+                    return false;
+                }
+
+                // Proceed to assign
                 SubjectDivision subjectDivision = SubjectDivision.builder()
-                        .division(divisionOpt.get())
-                        .subject(subjectOpt.get())
+                        .division(division)
+                        .subject(subject)
                         .teacher(teacherOpt.get())
                         .build();
 

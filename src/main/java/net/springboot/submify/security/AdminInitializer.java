@@ -52,8 +52,6 @@ public class AdminInitializer implements CommandLineRunner {
 
             admin.setRoles(Set.of(adminRole));
             teacherRepository.save(admin);
-
-            System.out.println("✅ Admin user created with email: " + adminEmail);
         } else {
             System.out.println("ℹ️ Admin user already exists.");
         }

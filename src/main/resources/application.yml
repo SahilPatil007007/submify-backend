@@ -4,21 +4,15 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-
-    url: jdbc:postgresql://localhost:5432/submify
-
+    url: jdbc:postgresql://db.dbwoifhjphzpemwqaunj.supabase.co:5432/postgres
     username: postgres
-
-    password: Sahil@123
+    password: SahilProject@123
 
   jpa:
     show-sql: true
-
     hibernate:
       ddl-auto: update
-
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-
     properties:
       hibernate:
         format_sql: true

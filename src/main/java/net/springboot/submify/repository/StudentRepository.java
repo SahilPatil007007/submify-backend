@@ -32,20 +32,24 @@ public interface StudentRepository extends JpaRepository<Student, String> {
 
 
     @Query(value = """
-    SELECT 
-        s.roll_no AS rollNo,
-        subj.name AS subjectName,
-        COALESCE(sub.status, false) AS submissionStatus,
-        sub.remark AS remark,
-        s.finalize_by_coordinator AS finalized
-    FROM students s
-    JOIN divisions d ON s.division_id = d.division
-    JOIN subject_divisions sd ON sd.division_id = d.division
-    JOIN subjects subj ON sd.subject_id = subj.subject_code
-    LEFT JOIN submissions sub 
-        ON sub.student_id = s.student_id AND sub.subject_id = subj.subject_code
-    WHERE d.coordinator_id = :coordinatorId
-    ORDER BY s.roll_no, subj.subject_code
+    SELECT
+            s.roll_no AS rollNo,
+            subj.name AS subjectName,
+            COALESCE(sub.status, false) AS submissionStatus,
+            sub.remark AS remark,
+            s.finalize_by_coordinator AS finalized
+        FROM students s
+        JOIN divisions d ON s.division_id = d.division
+        JOIN subject_divisions sd ON sd.division_id = d.division
+        JOIN subjects subj ON sd.subject_id = subj.subject_code
+        LEFT JOIN submissions sub
+            ON sub.student_id = s.student_id AND sub.subject_id = subj.subject_code
+        WHERE d.coordinator_id = :coordinatorId
+          AND subj.semester % 2 = CASE
+              WHEN EXTRACT(MONTH FROM CURRENT_DATE) BETWEEN 6 AND 12 THEN 1
+              ELSE 0
+          END
+        ORDER BY s.roll_no, subj.subject_code
 """, nativeQuery = true)
     List<Object[]> getSubmissionStatusForCoordinator(@Param("coordinatorId") String coordinatorId);
 

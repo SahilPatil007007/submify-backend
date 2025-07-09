@@ -4,8 +4,8 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://db.dbwoifhjphzpemwqaunj.supabase.co:5432/postgres
-    username: postgres
+    url: jdbc:postgresql://aws-0-ap-south-1.pooler.supabase.com:6543/postgres?prepareThreshold=0
+    username: postgres.dbwoifhjphzpemwqaunj
     password: SahilProject@123
 
   jpa:
